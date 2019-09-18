@@ -2,24 +2,25 @@ const express = require("express")
 const cors = require("cors")
 const MongoClient = require("mongodb").MongoClient;
 const ObjectId = require("mongodb").ObjectId;
-
-const app = express()
-const port = process.env.PORT || 5000
+require("./.env");
+const app = express()//create variable that calls express() function
+const port = process.env.PORT || 5000 //set our environment
 
 let db_url =
-"mongodb+srv://Bib92:8095762@chucky-gtnbt.mongodb.net/Foodtracker?retryWrites=true&w=majority"
+"mongodb+srv://process.ENV.USERNAME:process.ENV.PASSWORD@chucky-gtnbt.mongodb.net/Foodtracker?retryWrites=true&w=majority"//my connection string
 const client = new MongoClient(db_url, { useNewUrlParser: true, useUnifiedTopology: true });
+//creatig client variable that refs our database url
+
 
 app.use(express.json())
-app.use(cors())
+app.use(cors())//middleware or as i like to treat it as the translator to two parties i.e. 
+//the middle man so there can be communication
 
-app.use(express.json())
-app.use(cors())
-
-//get all foodies
+//get all foodies from the /foodies endpoit
 app.get('/foodies', (req, res) => {
   client.connect (err => {
-    if (!err) {
+    if (!err) {//in no error, dive into collection and find our objects => 
+      //into and array and call that array docs, i get my response called docs. do what i wish with it
       const collection = client.db("Foodtracker").collection("foodies");
       const results = collection.find({}).toArray((err, docs) => {
         console.log(docs);
@@ -33,8 +34,8 @@ app.get('/foodies', (req, res) => {
 });
 
 
-//get foodies by search, using two path params
-app.get("/foodies/:key/:value", (req, res) => {
+app.get("/foodies/:key/:value", (req, res) => {//more specefic path parametters. to get on single object 
+  //i.e. a search (i didnot include a search yet)
   client.connect(err => {
     if (!err) {
       const collection = client.db("Foodtracker").collection("foodies");
@@ -57,6 +58,7 @@ app.post("/foodie", (req, res) => {
       if(!err) {
         const collection = client.db("Foodtracker").collection("foodies");
         const results = await collection.insertOne(body);
+        //instead of .find() we just insertOne() as in insert one object into my database
         res.send(results.insertedId);
       }else {
         console.log(err)
@@ -71,7 +73,8 @@ app.post("/foodies", (req, res) => {
     client.connect(async err => {
       if (!err) {
         const collection = client.db("Foodtracker").collection("foodies");
-        const results = await collection.insertMany(body);
+        const results = await collection.insertMany(body);//push body into collection
+        //insert many instead of one. i would typically use post man when entering alot of data into my database
         res.send(results);
       } else {
         console.log(err);
@@ -85,9 +88,9 @@ app.put("/foodies/:ID", (req, res) => {
   client.connect(async err => {
     if (!err) {
       const collection = client.db("Foodtracker").collection("foodies");
-      const results = await collection.updateOne(
+      const results = await collection.updateOne(//updates current object by id
         { _id: ObjectId(req.params.ID) },
-        { $set: body }
+        { $set: body }//sets body. i kinda like to think of it as setState almost
       );
       res.send(results);
     } else {
@@ -102,8 +105,7 @@ app.delete("/foodies/:ID", (req, res) => {
   client.connect(async err => {
     if (!err) {
       const collection = client.db("Foodtracker").collection("foodies");
-      // perform actions on the collection object
-      const results = await collection.deleteOne({
+      const results = await collection.deleteOne({//removes object from database by id
         _id: ObjectId(req.params.ID)
       });
       res.send(results);
@@ -116,3 +118,4 @@ app.delete("/foodies/:ID", (req, res) => {
 
 
 app.listen(port,() => {console.log(`Listening on port ${port}`)})
+//enables us to "listen" to our port(our env me created) and upon a successful connection it will print to the console.
